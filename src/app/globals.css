@@ -1,26 +1,154 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Soothing Off-White Palette */
+    --bg-main: #f7f4ec;
+    --bg-card: #fdfbf7;
+    --bg-card-hover: #f4eee2;
+    --bg-secondary: #ede6d5;
+    --bg-tertiary: #e5ddca;
+    --border-main: #ded5c2;
+    --border-subtle: #eae2d1;
+    --border-gold: #cfa859;
+    --primary-main: #064e3b;
+    --primary-hover: #047857;
+    --primary-light: #e8f5ee;
+    --primary-badge: #d1fae5;
+    --gold-main: #b45309;
+    --gold-accent: #d97706;
+    --gold-bright: #f59e0b;
+    --gold-light: #fdf5df;
+    --gold-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #b45309 100%);
+    --emerald-gradient: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+    --text-main: #0a261d;
+    --text-muted: #385145;
+    --text-light: #60796e;
+    --shadow-soft: 0 4px 20px -2px rgba(6, 78, 59, 0.06);
+    --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.04);
+    --shadow-gold: 0 4px 15px rgba(217, 119, 6, 0.15);
+  }
+
+  .dark {
+    --bg-main: #071510;
+    --bg-card: #0d231b;
+    --bg-card-hover: #122e23;
+    --bg-secondary: #112920;
+    --bg-tertiary: #16362a;
+    --border-main: #1b3d30;
+    --border-subtle: #143026;
+    --border-gold: #926f29;
+    --primary-main: #10b981;
+    --primary-hover: #34d399;
+    --primary-light: #064e3b;
+    --primary-badge: #064e3b;
+    --gold-main: #fbbf24;
+    --gold-accent: #f59e0b;
+    --gold-bright: #fde68a;
+    --gold-light: #2c220c;
+    --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+    --emerald-gradient: linear-gradient(135deg, #07251c 0%, #0c382b 50%, #104939 100%);
+    --text-main: #f3fdf7;
+    --text-muted: #9ab4a7;
+    --text-light: #6c887b;
+    --shadow-soft: 0 4px 25px -2px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.4);
+    --shadow-gold: 0 4px 20px rgba(245, 158, 11, 0.15);
+  }
+
+  * {
+    border-color: var(--border-main);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    direction: rtl;
+    text-align: right;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-cairo), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  /* Eye-Comfortable Text Selection (No harsh red or brown) */
+  ::selection {
+    background-color: #064e3b;
+    color: #ffffff;
+  }
+
+  .dark ::selection {
+    background-color: #10b981;
+    color: #022c22;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Quranic Font Class */
+.font-quran {
+  font-family: var(--font-amiri), 'Traditional Arabic', serif;
+}
+
+/* Islamic Geometric Background Pattern */
+.bg-islamic-pattern {
+  background-color: var(--bg-main);
+  background-image: radial-gradient(var(--border-main) 1.2px, transparent 1.2px), radial-gradient(var(--border-main) 1.2px, var(--bg-main) 1.2px);
+  background-size: 36px 36px;
+  background-position: 0 0, 18px 18px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-accent);
+}
+
+/* Active Ayah Glowing Highlight */
+@keyframes activeAyahPulse {
+  0%, 100% {
+    background-color: rgba(245, 158, 11, 0.16);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    background-color: rgba(245, 158, 11, 0.28);
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.active-ayah-highlight {
+  animation: activeAyahPulse 2.5s ease-in-out infinite;
+  border-radius: 8px;
+  padding: 4px 6px;
+  display: inline;
+}
+
+/* Floating animation */
+@keyframes softFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-soft-float {
+  animation: softFloat 4s ease-in-out infinite;
 }

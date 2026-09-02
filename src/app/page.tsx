@@ -1,69 +1,213 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Navbar } from '@/components/Navbar';
+import { HeroSection } from '@/components/HeroSection';
+import { TasbihSection } from '@/components/TasbihSection';
+import { QuranSection } from '@/components/QuranSection';
+import { HadithSection } from '@/components/HadithSection';
+import { DuaSection } from '@/components/DuaSection';
+import { StatsSection } from '@/components/StatsSection';
+import { ShareSection } from '@/components/ShareSection';
+import { Footer } from '@/components/Footer';
+import { Toast } from '@/components/Toast';
+import { INITIAL_TASBIH_ITEMS } from '@/lib/fallbackData';
+import { TasbihItem } from '@/lib/types';
 
 export default function Home() {
+  const [tasbihItems, setTasbihItems] = useState<TasbihItem[]>(INITIAL_TASBIH_ITEMS);
+  const [totalQuranReads, setTotalQuranReads] = useState<number>(0);
+  const [totalAmeens, setTotalAmeens] = useState<number>(12); // Base community count
+
+  // Toast notification state
+  const [toast, setToast] = useState<{ isOpen: boolean; message: string; type?: 'success' | 'info' }>({
+    isOpen: false,
+    message: '',
+    type: 'success',
+  });
+
+  const showToast = (message: string, type: 'success' | 'info' = 'success') => {
+    setToast({ isOpen: true, message, type });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  // Load saved state from localStorage on mount
+  useEffect(() => {
+    try {
+      // 1. Tasbih counts
+      const savedTasbih = localStorage.getItem('sadaqa_tasbih_counts');
+      if (savedTasbih) {
+        const parsed = JSON.parse(savedTasbih) as Record<string, { count: number; completedRounds: number }>;
+        setTasbihItems((prev) =>
+          prev.map((item) => {
+            if (parsed[item.id]) {
+              return {
+                ...item,
+                count: parsed[item.id].count ?? 0,
+                completedRounds: parsed[item.id].completedRounds ?? 0,
+              };
+            }
+            return item;
+          })
+        );
+      }
+
+      // 2. Quran reads
+      const savedReads = localStorage.getItem('sadaqa_quran_reads');
+      if (savedReads) {
+        const parsed = JSON.parse(savedReads) as Record<string, number>;
+        const total = Object.values(parsed).reduce((a, b) => a + b, 0);
+        setTotalQuranReads(total);
+      }
+
+      // 3. Ameens count
+      const savedAmeens = localStorage.getItem('sadaqa_ameen_counts');
+      if (savedAmeens) {
+        const parsed = JSON.parse(savedAmeens) as Record<string, number>;
+        const total = Object.values(parsed).reduce((a, b) => a + b, 0);
+        setTotalAmeens(12 + total);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  // Save tasbih items to localStorage whenever they change
+  const saveTasbihToStorage = (updatedItems: TasbihItem[]) => {
+    try {
+      const map: Record<string, { count: number; completedRounds: number }> = {};
+      updatedItems.forEach((item) => {
+        map[item.id] = { count: item.count, completedRounds: item.completedRounds };
+      });
+      localStorage.setItem('sadaqa_tasbih_counts', JSON.stringify(map));
+    } catch {
+      // Ignore
+    }
+  };
+
+  // Increment a tasbih item
+  const handleIncrementTasbih = (id: string, step: number = 1) => {
+    setTasbihItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === id) {
+          const newCount = item.count + step;
+          if (newCount >= item.target) {
+            return {
+              ...item,
+              count: newCount % item.target,
+              completedRounds: item.completedRounds + Math.floor(newCount / item.target),
+            };
+          }
+          return {
+            ...item,
+            count: newCount,
+          };
+        }
+        return item;
+      });
+      saveTasbihToStorage(updated);
+      return updated;
+    });
+  };
+
+  // Reset a single tasbih item
+  const handleResetItem = (id: string) => {
+    setTasbihItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, count: 0, completedRounds: 0 };
+        }
+        return item;
+      });
+      saveTasbihToStorage(updated);
+      return updated;
+    });
+    showToast('تمت إعادة ضبط العداد بنجاح', 'info');
+  };
+
+  // Reset all tasbih items
+  const handleResetAll = () => {
+    setTasbihItems((prev) => {
+      const updated = prev.map((item) => ({ ...item, count: 0, completedRounds: 0 }));
+      saveTasbihToStorage(updated);
+      return updated;
+    });
+    showToast('تمت إعادة ضبط جميع عدادات التسبيح بنجاح', 'info');
+  };
+
+  // Handle Surah dedication
+  const handleSurahRead = (surahNumber: number, surahName: string) => {
+    setTotalQuranReads((prev) => prev + 1);
+    showToast(`تقبل الله منك! تم إهداء ثواب قراءة سورة ${surahName} لروحي المرحومين الحاج عوض شعلة والحاج محمد سويلم 🌿`);
+  };
+
+  // Handle Ameen trigger
+  const handleAmeen = () => {
+    setTotalAmeens((prev) => prev + 1);
+  };
+
+  const totalTasbihCount = tasbihItems.reduce(
+    (sum, item) => sum + item.count + item.completedRounds * item.target,
+    0
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen flex flex-col bg-islamic-pattern">
+      {/* Sticky Navigation */}
+      <Navbar />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <HeroSection
+          totalTasbihCount={totalTasbihCount}
+          totalQuranReadCount={totalQuranReads}
+          totalAmeensCount={totalAmeens}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {/* Interactive Tasbih Counter */}
+        <TasbihSection
+          items={tasbihItems}
+          onIncrement={handleIncrementTasbih}
+          onResetItem={handleResetItem}
+          onResetAll={handleResetAll}
+        />
+
+        {/* Quran Reader & Audio Player */}
+        <QuranSection onSurahRead={handleSurahRead} />
+
+        {/* Authentic Hadiths */}
+        <HadithSection onCopySuccess={(msg) => showToast(msg)} />
+
+        {/* Duas for the Deceased */}
+        <DuaSection
+          onCopySuccess={(msg) => showToast(msg)}
+          onAmeen={handleAmeen}
+        />
+
+        {/* Statistics & Community Deeds */}
+        <StatsSection
+          totalTasbihCount={totalTasbihCount}
+          totalQuranReadCount={totalQuranReads}
+          totalAmeensCount={totalAmeens}
+        />
+
+        {/* Spread the Good / Social Share */}
+        <ShareSection onCopySuccess={(msg) => showToast(msg)} />
       </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Floating Notification Toast */}
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}
+      />
     </div>
   );
 }
