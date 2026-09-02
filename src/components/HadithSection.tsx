@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { HadithItem } from '@/lib/types';
 import { HADITHS_DATA } from '@/lib/fallbackData';
-import { BookMarked, Copy, Check, Sparkles, Share2 } from 'lucide-react';
+import { BookMarked, Copy, Check } from 'lucide-react';
 
 interface HadithSectionProps {
   onCopySuccess: (text: string) => void;

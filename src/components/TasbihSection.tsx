@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { TasbihItem } from '@/lib/types';
 import { TasbihCard } from './TasbihCard';
 import { ConfirmModal } from './ConfirmModal';
-import { Sparkles, RotateCcw, Filter, Volume2, VolumeX } from 'lucide-react';
+import { PlusCircle, RotateCcw, Volume2, VolumeX, Sparkles, Heart } from 'lucide-react';
 import { useSound } from '@/context/SoundContext';
 
 interface TasbihSectionProps {

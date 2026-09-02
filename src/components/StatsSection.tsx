@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Award, BookOpen, Heart, Sparkles, TrendingUp } from 'lucide-react';
+import { BookOpen, Heart, Sparkles, TrendingUp } from 'lucide-react';
 
 interface StatsSectionProps {
   totalTasbihCount: number;

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowUp, Heart, Sparkles } from 'lucide-react';
+import { ArrowUp, BookOpen, Share2, Award, HeartHandshake } from 'lucide-react';
 
 export function Footer() {
   const scrollToTop = () => {
